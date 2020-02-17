@@ -4,37 +4,47 @@ Created on Feb 16, 2020
 @author: Anik
 '''
 
+import re
 import time
 from z3 import *
 
 pathToGraphDir = "digraphs/"
 
 
+def getStates():
+    
+    return
+
+
+def getLabel():
+    
+    return
+
+
 def getLTL3(fileName):
     
+    ltl3 = []
     path = pathToGraphDir + fileName
     
-    # s = Solver()
-    
     file = open(path)
+    
     line = file.readline()
+    ltl3.append(line.rstrip())
     
     while line:
         
-        # param = line.split("\t")
-        
         line = file.readline()
-        print(line)
+        ltl3.append(line.rstrip())
         
     file.close()
     
-    return
+    return ltl3
 
 
 def main():
     
     testFile = "a U b.txt"
-    getLTL3(testFile)
+    print(getLTL3(testFile))
 
 
 if __name__ == '__main__':
