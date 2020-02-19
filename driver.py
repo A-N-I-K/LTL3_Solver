@@ -12,6 +12,18 @@ from z3 import *
 pathToGraphDir = "digraphs/"
 stateMapper = {}
 
+stateStart = []
+stateAccept = []
+stateReject = []
+
+
+def markStartState():
+
+    # backtrack from accept state
+    startStateFromAcc = stateAccept[0]
+
+    print(stateMapper[startStateFromAcc])
+
 
 def populateMapper(lines):
 
@@ -23,25 +35,40 @@ def populateMapper(lines):
         if (stateFrom != None or  stateTo != None or stateLabel != None):
 
             # stateMapper[stateFrom] = []
-
             stateMapper[stateFrom].append([stateTo, stateLabel])
+
+    markStartState()
 
 
 def createStatesInMapper(lines):
 
     for line in lines:
 
-        try:
+        if ")\", style=filled, color=" in line:
 
-            match = re.compile("\"\(.*\)\" \[label=\"\(")
-            label = match.findall(line)[0][2:-12]
+            try:
 
-            stateMapper[label] = []
+                match = re.compile("\"\(.*\)\" \[label=\"\(")
+                label = match.findall(line)[0][2:-12]
 
-        except:
+                if "green" in line:
 
-            # print("Given line :", line, "could not be parsed.")
-            pass
+                    stateMapper[label] = ["accept"]
+                    stateAccept.append(label)
+
+                if "red" in line:
+
+                    stateMapper[label] = ["reject"]
+                    stateReject.append(label)
+
+                if "yellow" in line:
+
+                    stateMapper[label] = ["unknown"]
+
+            except:
+
+                # print("Given line :", line, "could not be parsed.")
+                pass
 
 
 def getStates(line):
@@ -56,7 +83,7 @@ def getStates(line):
         match = re.compile("\)\" -> \"\(.*\)\" \[label = \"\(")
         stateTo = match.findall(line)[0][8:-14]
 
-        return stateTo, stateFrom, stateTo == stateFrom
+        return stateFrom, stateTo, stateTo == stateFrom
 
     except:
 
