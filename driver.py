@@ -19,10 +19,24 @@ stateReject = []
 
 def markStartState():
 
+    print(stateMapper)
+
     # backtrack from accept state
     startStateFromAcc = stateAccept[0]
 
-    print(stateMapper[startStateFromAcc])
+    # print(stateMapper[startStateFromAcc])
+
+    while(True):
+
+        for state in stateMapper[startStateFromAcc]:
+            print("outer", state)
+
+            if (state[0] != startStateFromAcc) & (len(state) == 2):
+
+                startStateFromAcc = state[0]
+                print(startStateFromAcc)
+
+        break
 
 
 def populateMapper(lines):
@@ -35,7 +49,7 @@ def populateMapper(lines):
         if (stateFrom != None or  stateTo != None or stateLabel != None):
 
             # stateMapper[stateFrom] = []
-            stateMapper[stateFrom].append([stateTo, stateLabel])
+            stateMapper[stateTo].append([stateFrom, stateLabel])
 
     markStartState()
 
@@ -53,17 +67,17 @@ def createStatesInMapper(lines):
 
                 if "green" in line:
 
-                    stateMapper[label] = ["accept"]
+                    stateMapper[label] = [["accept"]]
                     stateAccept.append(label)
 
                 if "red" in line:
 
-                    stateMapper[label] = ["reject"]
+                    stateMapper[label] = [["reject"]]
                     stateReject.append(label)
 
                 if "yellow" in line:
 
-                    stateMapper[label] = ["unknown"]
+                    stateMapper[label] = [["unknown"]]
 
             except:
 
@@ -147,7 +161,7 @@ def main():
 #     mapper["anik"].append("ax")
 #     mapper["anik"].append("ab")
 
-    print(stateMapper)
+    # print(stateMapper)
 
 
 if __name__ == '__main__':
