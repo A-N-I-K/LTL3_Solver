@@ -23,39 +23,49 @@ def markStartState():
 
     # backtrack from accept state
     startStateFromAcc = stateAccept[0]
+    startStateFromAcc = "1, -1"
 
     # print(stateMapper[startStateFromAcc])
+    tmp = "x"
+    
+    startStatefound = False
 
-    while(True):
+    while(startStatefound == False):
+
+        startStatefound = True
 
         for state in stateMapper[startStateFromAcc]:
-            # print("outer", state)
+            # print(stateMapper[startStateFromAcc])
 
             if (state[0] != startStateFromAcc) & (len(state) == 2):
                 
-                startStateFromAcc = state[0]
-                # print(state[0])
+                tmp = state[0]
+                print(state)
+                startStateFromAcc = tmp
+                startStatefound = False
+                break
 
-        break
+        # tmp = startStateFromAcc
+        print(tmp)
 
 
 def populateMapper(lines):
     
-    print(stateMapper)
+    # print(stateMapper)
 
     for line in lines:
 
         stateFrom, stateTo, isLoop = getStates(line)
         stateLabel = getLabel(line)
         
-        print(stateTo, stateFrom, line)
+        # print(stateTo, stateFrom, line)
         
         if (stateFrom != None or  stateTo != None or stateLabel != None):
 
             # stateMapper[stateFrom] = []
             stateMapper[stateTo].append([stateFrom, stateLabel])
             
-            # print(stateMapper)
+    # print(stateMapper)
 
     markStartState()
 
@@ -169,7 +179,12 @@ def main():
 #     mapper["anik"].append("ax")
 #     mapper["anik"].append("ab")
 
-    # print(stateMapper)
+    print("Full:\n")
+    print(stateMapper)
+    print("Partial:\n")
+    print(stateMapper["1, -1"])
+    print(stateMapper["0, 0"])
+    print(stateMapper["-1, 1"])
 
 
 if __name__ == '__main__':
