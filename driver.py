@@ -19,7 +19,7 @@ stateReject = []
 
 def markStartState():
 
-    print(stateMapper)
+    # print(stateMapper)
 
     # backtrack from accept state
     startStateFromAcc = stateAccept[0]
@@ -29,27 +29,33 @@ def markStartState():
     while(True):
 
         for state in stateMapper[startStateFromAcc]:
-            print("outer", state)
+            # print("outer", state)
 
             if (state[0] != startStateFromAcc) & (len(state) == 2):
-
+                
                 startStateFromAcc = state[0]
-                print(startStateFromAcc)
+                # print(state[0])
 
         break
 
 
 def populateMapper(lines):
+    
+    print(stateMapper)
 
     for line in lines:
 
         stateFrom, stateTo, isLoop = getStates(line)
         stateLabel = getLabel(line)
         
+        print(stateTo, stateFrom, line)
+        
         if (stateFrom != None or  stateTo != None or stateLabel != None):
 
             # stateMapper[stateFrom] = []
             stateMapper[stateTo].append([stateFrom, stateLabel])
+            
+            # print(stateMapper)
 
     markStartState()
 
@@ -96,6 +102,8 @@ def getStates(line):
 
         match = re.compile("\)\" -> \"\(.*\)\" \[label = \"\(")
         stateTo = match.findall(line)[0][8:-14]
+        
+        # print(stateFrom, stateTo)
 
         return stateFrom, stateTo, stateTo == stateFrom
 
