@@ -19,7 +19,72 @@ stateAccept = []
 stateReject = []
 
 
-def markStartState2():
+def printAllPathsUtil(u, d, visited, path): 
+
+    # Mark the current node as visited and store in path 
+    visited[u] = True
+    path.append(u) 
+
+    # If current vertex is same as destination, then print 
+    # current path[] 
+    if u == d: 
+        print(path) 
+    else: 
+        # If current vertex is not destination 
+        # Recur for all the vertices adjacent to this vertex 
+        for i in stateMapper[u]: 
+            
+            if (len(i) == 2) & (visited[i[0]] == False): 
+                
+                printAllPathsUtil(i[0], d, visited, path) 
+                  
+    # Remove current vertex from path[] and mark it as unvisited 
+    path.pop() 
+    visited[u] = False
+    
+    
+def printAllPaths(s, d): 
+
+    # Mark all the vertices as not visited 
+    # visited = [False] * (V)
+    
+    # visited = [False] * len(stateSet)
+    
+    visited = {}
+    
+    for state in stateSet:
+        
+        visited[state] = False
+
+    # Create an array to store paths 
+    path = [] 
+
+    # Call the recursive helper function to print all paths 
+    printAllPathsUtil(s, d, visited, path)
+
+    
+def mergeLabels():  # Obsolete
+    
+    for state in stateSet:
+        
+        # print(state)
+        print(stateMapper[state])
+        
+        for i in range(1, len(stateMapper[state]) - 2):
+            
+            print("i", i)
+            
+            for j in range(i + 1, len(stateMapper[state]) - 1):
+                
+                print("j", j)
+                
+                if stateMapper[state][i][0] == stateMapper[state][j][0]:
+                    
+                    stateMapper[state][i][1] += " OR " + stateMapper[state][j][1]
+                    stateMapper[state].pop(j)
+
+
+def markStartState2():  # Obsolete
 
     # print(stateMapper)
 
@@ -53,13 +118,13 @@ def markStartState2():
         
 def markStartState():
     
-    stateStartTemp = stateSet
+    stateStartTemp = stateSet.copy()
     
     for stateTo in stateSet:
         
         for stateFrom in stateMapper[stateTo]:
             
-            if (stateFrom[0] != stateTo) & (len(stateFrom) == 2):
+            if (len(stateFrom) == 2) & (stateFrom[0] != stateTo):
             
                 stateStartTemp.remove(stateTo)
                 break
@@ -70,7 +135,7 @@ def markStartState():
         
     stateStart.append(stateStartTemp[0])
     
-    print(stateStart[0])
+    # print(stateStart[0], stateSet, stateStartTemp)
 
 
 def populateMapper(lines):
@@ -82,12 +147,23 @@ def populateMapper(lines):
         stateFrom, stateTo, isLoop = getStates(line)
         stateLabel = getLabel(line)
         
+        newEntry = True
+        
         # print(stateTo, stateFrom, line)
         
         if (stateFrom != None or  stateTo != None or stateLabel != None):
 
             # stateMapper[stateFrom] = []
-            stateMapper[stateTo].append([stateFrom, stateLabel])
+            for state in stateMapper[stateTo]:
+                
+                if (len(state) == 2) & (state[0] == stateFrom):
+                    
+                    state[1] += " OR " + stateLabel
+                    newEntry = False
+            
+            if newEntry:
+                
+                stateMapper[stateTo].append([stateFrom, stateLabel])
             
     # print(stateMapper)
 
@@ -194,7 +270,8 @@ def main():
 
     createStatesInMapper(ltl3)
     populateMapper(ltl3)
-
+    # mergeLabels()
+    
     # print(createStatesInMapper(ltl3))
 
 #     mapper = {}
