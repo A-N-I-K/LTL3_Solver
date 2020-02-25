@@ -12,12 +12,14 @@ from z3 import *
 pathToGraphDir = "digraphs/"
 stateMapper = {}
 
+stateSet = []
+
 stateStart = []
 stateAccept = []
 stateReject = []
 
 
-def markStartState():
+def markStartState2():
 
     # print(stateMapper)
 
@@ -47,6 +49,28 @@ def markStartState():
 
         # tmp = startStateFromAcc
         print(tmp)
+
+        
+def markStartState():
+    
+    stateStartTemp = stateSet
+    
+    for stateTo in stateSet:
+        
+        for stateFrom in stateMapper[stateTo]:
+            
+            if (stateFrom[0] != stateTo) & (len(stateFrom) == 2):
+            
+                stateStartTemp.remove(stateTo)
+                break
+            
+    if len(stateStartTemp) != 1:
+        
+        print("Error : Multiple start states detected")
+        
+    stateStart.append(stateStartTemp[0])
+    
+    print(stateStart[0])
 
 
 def populateMapper(lines):
@@ -94,6 +118,8 @@ def createStatesInMapper(lines):
                 if "yellow" in line:
 
                     stateMapper[label] = [["unknown"]]
+                    
+                stateSet.append(label)
 
             except:
 
@@ -179,12 +205,12 @@ def main():
 #     mapper["anik"].append("ax")
 #     mapper["anik"].append("ab")
 
-    print("Full:\n")
-    print(stateMapper)
-    print("Partial:\n")
+    print("Full:")
+    print(stateMapper, "\n")
+    print("Partial:")
     print(stateMapper["1, -1"])
     print(stateMapper["0, 0"])
-    print(stateMapper["-1, 1"])
+    print(stateMapper["-1, 1"], "\n")
 
 
 if __name__ == '__main__':
