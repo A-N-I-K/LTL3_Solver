@@ -18,8 +18,66 @@ stateStart = []
 stateAccept = []
 stateReject = []
 
+paths = []
 
-def printAllPathsUtil(u, d, visited, path): 
+
+def labelOf(stateFrom, stateTo):
+    
+    print(stateFrom, stateTo)
+    
+    for state in stateMapper[stateTo]:
+        
+        # print(stateMapper[stateTo])
+        print(state)
+        
+        if (len(state) == 2) & (state[0] == stateFrom):
+            
+            return state[1]
+        
+    return "NONE"
+
+
+def LTL3_to_SMT_text():
+    
+    text = ""
+    count = 0
+    
+    # OR; to bind constraints for different paths
+    text += "OR ( FALSE"
+    
+    for path in paths:
+        
+        # AND; to bind all constraints in a path
+        text += ", AND ( TRUE"
+        
+        # Terminating (Accept/Reject) constraint
+        text += ", Ei_{}.f(i_{}) = ".format(count, count) + labelOf(path[0], path[1])
+        count += 1
+        
+        # Remaining constraints; in bottom-up order
+        for i in range(1, len(path)):
+            
+            # Check for loop
+            if labelOf(path[i], path[i]) != "NONE":
+                
+                text += " , Ai_{} <= i_{} < i_{}.f(i_{}) = ".format(count + 1, count, count - 1, count) + labelOf(path[i], path[i])
+                count += 1
+                
+            # Check if next state exists
+            if i + 1 < len(path):
+                
+                text += " , Ei_{} = i_{}-1.f(i_{}) = ".format(count, count - 1, count) + labelOf(path[i], path[i + 1])
+                count += 1
+            
+        # count -= 1
+        text += ", i_{} = 0 )".format(count)
+    
+    text += " )"
+        
+    return text
+
+
+def printAllPathsUtil(u, d, visited, path):
 
     # Mark the current node as visited and store in path 
     visited[u] = True
@@ -27,19 +85,24 @@ def printAllPathsUtil(u, d, visited, path):
 
     # If current vertex is same as destination, then print 
     # current path[] 
-    if u == d: 
-        print(path) 
-    else: 
+    if u == d:
+        
+        # print(path)
+        paths.append(path.copy())
+        
+    else:
+        
+        print(stateMapper[u])
         # If current vertex is not destination 
         # Recur for all the vertices adjacent to this vertex 
-        for i in stateMapper[u]: 
+        for i in range(1, len(stateMapper[u])):
             
-            if (len(i) == 2) & (visited[i[0]] == False): 
+            if visited[stateMapper[u][i][0]] == False:
                 
-                printAllPathsUtil(i[0], d, visited, path) 
+                printAllPathsUtil(stateMapper[u][i][0], d, visited, path)
                   
     # Remove current vertex from path[] and mark it as unvisited 
-    path.pop() 
+    path.pop()
     visited[u] = False
     
     
@@ -288,6 +351,17 @@ def main():
     print(stateMapper["1, -1"])
     print(stateMapper["0, 0"])
     print(stateMapper["-1, 1"], "\n")
+    
+    printAllPaths("-1, 1", "0, 0")
+    
+    # Reverse state order
+    for path in paths:
+        
+        path.reverse()
+    
+    print(paths)
+    
+    print(LTL3_to_SMT_text())
 
 
 if __name__ == '__main__':
