@@ -20,6 +20,9 @@ stateReject = []
 
 paths = []
 
+sAcc = Solver()
+sRej = Solver()
+
 
 def labelOf(stateFrom, stateTo):
     
@@ -38,12 +41,22 @@ def labelOf(stateFrom, stateTo):
 
 
 def LTL3_to_SMT_text():
+    # Test input
+    a = "111111111"
+    b = "111111111"
     
     text = ""
     count = 0
     
     # OR; to bind constraints for different paths
     text += "OR ( FALSE"
+    
+    # SMT section start
+    indexparent = 0
+    
+    constraintPaths = []
+    constraintQuantifiers = []
+    # constraintAllPaths = Or(False, True)
     
     for path in paths:
         
@@ -54,6 +67,21 @@ def LTL3_to_SMT_text():
         text += ", Ei_{}.f(i_{}) = ".format(count, count) + labelOf(path[0], path[1])
         count += 1
         
+        # SMT section start
+        f = Function('f', IntSort(), BoolSort())
+        
+        indexInPath = 0
+        qtInPath = []
+        conInPath = []
+        
+        # qt = Int('qt')
+        qtInPath.append(Int('qt{}_{}'.format(indexparent, indexInPath)))
+        
+        conInPath.append(f(qtInPath[indexInPath]) == And(((len(a) / pow(10, (len(a) - qtInPath[indexInPath]))) % 10) == 1, ((len(b) / pow(10, (len(a) - qtInPath[indexInPath]))) % 10) == 1))
+        
+        indexInPath += 1
+        # SMT section end
+        
         # Remaining constraints; in bottom-up order
         for i in range(1, len(path)):
             
@@ -63,16 +91,33 @@ def LTL3_to_SMT_text():
                 text += " , Ai_{} <= i_{} < i_{}.f(i_{}) = ".format(count + 1, count, count - 1, count) + labelOf(path[i], path[i])
                 count += 1
                 
+                # SMT section start
+                qtInPath.append(Int('qt{}_{}'.format(indexparent, indexInPath)))
+                qtInPath.append(Int('qt{}_{}'.format(indexparent, indexInPath + 1)))  # Should probably be contingent upon a condition
+                
+                conInPath.append(ForAll(qtInPath[indexInPath], Implies(And(qtInPath[indexInPath] < qtInPath[indexInPath - 1], qtInPath[indexInPath] >= qtInPath[indexInPath + 1]), Or(False, f(qtInPath[indexInPath]) == And(((len(a) / pow(10, (len(a) - qtInPath[indexInPath]))) % 10) == 1, ((len(b) / pow(10, (len(a) - qtInPath[indexInPath]))) % 10) == 1)))))
+                # conInPath.append(f(qtInPath[indexInPath]) == And(((len(a) / pow(10, (len(a) - qtInPath[indexInPath]))) % 10) == 1, ((len(b) / pow(10, (len(a) - qtInPath[indexInPath]))) % 10) == 1))
+                
+                indexInPath += 1
+                # SMT section end
+                
             # Check if next state exists
             if i + 1 < len(path):
                 
                 text += " , Ei_{} = i_{}-1.f(i_{}) = ".format(count, count - 1, count) + labelOf(path[i], path[i + 1])
                 count += 1
+                
+                # SMT section start
+                qtInPath.append(Int('qt{}_{}'.format(indexparent, indexInPath)))
+                
+                conInPath.append(And(qtInPath[indexInPath] == qtInPath[indexInPath] - 1, f(qtInPath[indexInPath]) == And(((len(a) / pow(10, (len(a) - qtInPath[indexInPath]))) % 10) == 1, ((len(b) / pow(10, (len(a) - qtInPath[indexInPath]))) % 10) == 1)))
             
         # count -= 1
         text += ", i_{} = 0 )".format(count)
     
     text += " )"
+    
+    # UPDATE SOLVER HERE
         
     return text
 
@@ -221,7 +266,7 @@ def populateMapper(lines):
                 
                 if (len(state) == 2) & (state[0] == stateFrom):
                     
-                    state[1] += " OR " + stateLabel
+                    state[1] += "||" + stateLabel
                     newEntry = False
             
             if newEntry:
